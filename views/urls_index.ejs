@@ -30,7 +30,7 @@
         <tbody>
           <% for (let id in urlDatabase) { %>
             <tr>
-              <td><%= id %></td>
+              <td><a href="/urls/<%= id %>"><%= id %></a></td>
               <td><%= urlDatabase[id] %></td>
             </tr>
           <% } %>
