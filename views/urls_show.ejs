@@ -21,7 +21,16 @@
           Short URL ID: <a href="/u/<%= id %>"><%= id %></a>
         </p>
       </div>
-      <div class="card-footer text-muted"></div>
+      <div class="card-footer text-muted">
+        <form action='/urls/<%= id%>' method="post">
+          <div class="form-group mb-2">
+            <h3>Edit</h3>
+            <label for = "newURL"> New URL: </label>
+            <input type="text" name="newURL" placeholder="<%= longURL %>" required>
+            <button type="submit" class="btn btn-primary">Submit</button>
+          </div>
+        </form>
+      </div>
     </div>
     <!-- Bootstrap JS -->
     <script
