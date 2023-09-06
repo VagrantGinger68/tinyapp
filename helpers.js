@@ -1,3 +1,5 @@
+const { urlDatabase, users } = require('./data');
+
 const generateRandomString = function() {
   const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   let randomString = "";
@@ -10,6 +12,24 @@ const generateRandomString = function() {
   return randomString;
 };
 
+const createUser = (users, email, password) => {
+  const newUser = {
+    id: generateRandomString(),
+    email,
+    password
+  };
 
+  users[newUser.id] = newUser;
 
-module.exports = { generateRandomString };
+  return newUser;
+};
+
+const findUserByEmail = function(users, email) {
+  const usersList = Object.values(users);
+
+  const user = usersList.find((user) => email === user.email);
+
+  return user;
+};
+
+module.exports = { generateRandomString, findUserByEmail, createUser };
