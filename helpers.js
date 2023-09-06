@@ -32,4 +32,22 @@ const findUserByEmail = function(users, email) {
   return user;
 };
 
-module.exports = { generateRandomString, findUserByEmail, createUser };
+const validateUser = function(users, email, password) {
+  const user = findUserByEmail(users, email);
+
+  if (email === "" || password === "") {
+    return { error : "Email or Password is blank!", user : undefined };
+  }
+  
+  if (!user) {
+    return { error : "User not found!", user : undefined };
+  }
+  
+  if (user.password !== password) {
+    return { error : "Password doesn't match!", user : undefined };
+  }
+  
+  return { error : undefined, user };
+};
+
+module.exports = { generateRandomString, findUserByEmail, createUser, validateUser };

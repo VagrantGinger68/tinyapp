@@ -11,7 +11,7 @@ app.use(cookieParser());
 
 const { urlDatabase, users } = require('./data');
 
-const { generateRandomString, findUserByEmail, createUser } = require('./helpers');
+const { generateRandomString, findUserByEmail, createUser, validateUser } = require('./helpers');
 
 //---------GET REQUESTS--------------
 
@@ -78,15 +78,12 @@ app.post("/urls/:shortURL", (req, res) => {
 
 app.post("/login", (req, res) => {
   const { email, password } = req.body;
-  const userCheck = findUserByEmail(users, email);
-  if (!userCheck) {
-    res.status(403).send("User not found");
-  } else if (userCheck.password !== password) {
-    res.status(403).send("Password doesn't match");
-  } else {
-    res.cookie("user_id", userCheck.id);
-    res.redirect("/urls");
+  const { error,user } = validateUser(users, email, password);
+  if (error) {
+    res.status(403).send(error);
   }
+  res.cookie("user_id", user.id);
+  res.redirect("/urls");
 });
 
 app.post("/logout", (req, res) => {
@@ -95,8 +92,8 @@ app.post("/logout", (req, res) => {
 });
 
 app.post("/register", (req, res) => {
-  let { email, password } = req.body;
-  let userCheck = findUserByEmail(users, email);
+  const { email, password } = req.body;
+  const userCheck = findUserByEmail(users, email);
 
   if (email === "" || password === "") {
     res.status(400).send("Email or Password was left blank!");
@@ -107,7 +104,6 @@ app.post("/register", (req, res) => {
   } else {
     res.status(400).send("User already exists!");
   }
-
 });
 
 app.listen(PORT, () => {
