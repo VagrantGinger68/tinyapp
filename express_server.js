@@ -11,7 +11,7 @@ app.use(cookieParser());
 
 const { urlDatabase, users } = require('./data');
 
-const { generateRandomString } = require('./helpers');
+const { generateRandomString, findUserByEmail, createUser } = require('./helpers');
 
 //---------GET REQUESTS--------------
 
@@ -45,7 +45,13 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 app.get("/register", (req, res) => {
-  res.render("register");
+  const templateVars = { user : users[req.cookies["user_id"]]};
+  res.render("register", templateVars);
+});
+
+app.get("/login", (req, res) => {
+  const templateVars = { user : users[req.cookies["user_id"]]};
+  res.render("login", templateVars);
 });
 
 
@@ -71,22 +77,37 @@ app.post("/urls/:shortURL", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-  res.cookie("user_id");
-  res.redirect("/urls");
+  const { email, password } = req.body;
+  const userCheck = findUserByEmail(users, email);
+  if (!userCheck) {
+    res.status(403).send("User not found");
+  } else if (userCheck.password !== password) {
+    res.status(403).send("Password doesn't match");
+  } else {
+    res.cookie("user_id", userCheck.id);
+    res.redirect("/urls");
+  }
 });
 
 app.post("/logout", (req, res) => {
   res.clearCookie("user_id");
-  res.redirect("/urls");
+  res.redirect("/login");
 });
 
 app.post("/register", (req, res) => {
-  let id = generateRandomString();
-  let email = req.body.email;
-  let password = req.body.password;
-  users[id] = { id, email, password};
-  res.cookie("user_id", users[id].id);
-  res.redirect('/urls');
+  let { email, password } = req.body;
+  let userCheck = findUserByEmail(users, email);
+
+  if (email === "" || password === "") {
+    res.status(400).send("Email or Password was left blank!");
+  } else if (!userCheck) {
+    const user = createUser(users, email, password);
+    res.cookie("user_id", user.id);
+    res.redirect("/urls");
+  } else {
+    res.status(400).send("User already exists!");
+  }
+
 });
 
 app.listen(PORT, () => {
