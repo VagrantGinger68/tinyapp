@@ -16,7 +16,7 @@ const { generateRandomString, findUserByEmail, createUser, validateUser } = requ
 //---------GET REQUESTS--------------
 
 app.get("/", (req, res) => {
-  res.redirect("/urls");
+  res.redirect("/login");
 });
 
 app.get("/urls.json", (req, res) => {
@@ -30,6 +30,9 @@ app.get("/urls", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   const templateVars = { user : users[req.cookies["user_id"]] };
+  if (!req.cookies["user_id"]) {
+    res.redirect("/login");
+  }
   res.render("urls_new", templateVars);
 });
 
@@ -40,24 +43,40 @@ app.get("/urls/:shortURL", (req, res) => {
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL];
-  res.redirect(longURL);
+  if (!urlDatabase[req.params.shortURL]) {
+    res.send("<h1>shortURL does not exist in urlDatabase</h1>");
+  } else {
+    const longURL = urlDatabase[req.params.shortURL];
+    res.redirect(longURL);
+  }
 });
 
 app.get("/register", (req, res) => {
   const templateVars = { user : users[req.cookies["user_id"]]};
-  res.render("register", templateVars);
+  if (req.cookies["user_id"]) {
+    res.redirect("/urls");
+  } else {
+    res.render("register", templateVars);
+  }
 });
 
 app.get("/login", (req, res) => {
   const templateVars = { user : users[req.cookies["user_id"]]};
-  res.render("login", templateVars);
+  if (req.cookies["user_id"]) {
+    res.redirect("/urls");
+  } else {
+    res.render("login", templateVars);
+  }
 });
 
 
 //-------------POST REQUESTS-------------
 
 app.post("/urls", (req, res) => {
+  if (res.cookie["user_id"]) {
+    res.send("<h1>You cannot post until you are logged in</h1>");
+    return;
+  }
   let shortURL = generateRandomString();
   urlDatabase[shortURL] = req.body.longURL;
   res.redirect(`/urls/${shortURL}`);
