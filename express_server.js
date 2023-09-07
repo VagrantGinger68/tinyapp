@@ -16,7 +16,10 @@ const { generateRandomString, findUserByEmail, createUser, validateUser, urlsFor
 //---------GET REQUESTS--------------
 
 app.get("/", (req, res) => {
-  res.redirect("/login");
+  if (!req.cookies["user_id"]) {
+    res.redirect("/login");
+  }
+  res.redirect("/urls");
 });
 
 app.get("/urls.json", (req, res) => {
@@ -47,7 +50,7 @@ app.get("/urls/:shortURL", (req, res) => {
   if (!userId) {
     res.redirect("/login");
   } else if (userId !== urlDatabase[shortURL].userID) {
-    res.status(403).send("You do not own this URL.");
+    res.status(403).send("<h1>You do not own this URL.</h1>");
   } else {
     const templateVars = { shortURL, longURL : urlDatabase[shortURL].longURL, user: users[userId] };
     res.render("urls_show", templateVars);
@@ -85,9 +88,8 @@ app.get("/login", (req, res) => {
 //-------------POST REQUESTS-------------
 
 app.post("/urls", (req, res) => {
-  if (res.cookie["user_id"]) {
-    res.send("<h1>You cannot post until you are logged in</h1>");
-    return;
+  if (!res.cookie["user_id"]) {
+    res.status(403).res.send("<h1>You cannot post until you are logged in</h1>");
   }
   let shortURL = generateRandomString();
   urlDatabase[shortURL] = { longURL : req.body.longURL, userID : req.cookies["user_id"] };
@@ -100,7 +102,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
     delete urlDatabase[req.params.shortURL];
     res.redirect("/urls");
   } else {
-    res.status(403).send("Deleting is not permitted");
+    res.status(403).send("<h1>Deleting is not permitted because you are not logged in or you don't own this URL</h1>");
   }
 });
 
@@ -112,7 +114,7 @@ app.post("/urls/:shortURL", (req, res) => {
     urlDatabase[req.params.shortURL].longURL = newURL;
     res.redirect('/urls');
   } else {
-    res.status(403).send("Editing is not permitted");
+    res.status(403).send("<h1>Editing is not permitted because you are not logged in or you don't own this URL</h1>");
   }
 });
 
@@ -136,13 +138,13 @@ app.post("/register", (req, res) => {
   const userCheck = findUserByEmail(users, email);
 
   if (email === "" || password === "") {
-    res.status(400).send("Email or Password was left blank!");
+    res.status(400).send("<h1>Email or Password was left blank!</h1>");
   } else if (!userCheck) {
     const user = createUser(users, email, password);
     res.cookie("user_id", user.id);
     res.redirect("/urls");
   } else {
-    res.status(400).send("User already exists!");
+    res.status(400).send("<h1>Email already in use!</h1>");
   }
 });
 

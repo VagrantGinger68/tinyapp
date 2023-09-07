@@ -36,15 +36,15 @@ const validateUser = function(users, email, password) {
   const user = findUserByEmail(users, email);
 
   if (email === "" || password === "") {
-    return { error : "Email or Password is blank!", user : undefined };
+    return { error : "<h1>Email or Password is blank!</h1>", user : undefined };
   }
   
   if (!user) {
-    return { error : "User not found!", user : undefined };
+    return { error : "<h1>User not found!</h1>", user : undefined };
   }
   
   if (user.password !== password) {
-    return { error : "Password doesn't match!", user : undefined };
+    return { error : "<h1>Password doesn't match!</h1>", user : undefined };
   }
   
   return { error : undefined, user };
