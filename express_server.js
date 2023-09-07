@@ -141,6 +141,8 @@ app.post("/register", (req, res) => {
     res.status(400).send("<h1>Email or Password was left blank!</h1>");
   } else if (!userCheck) {
     const user = createUser(users, email, password);
+    console.log(user);
+    console.log(users);
     res.cookie("user_id", user.id);
     res.redirect("/urls");
   } else {
