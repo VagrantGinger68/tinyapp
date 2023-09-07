@@ -11,7 +11,7 @@ app.use(cookieParser());
 
 const { urlDatabase, users } = require('./data');
 
-const { generateRandomString, findUserByEmail, createUser, validateUser } = require('./helpers');
+const { generateRandomString, findUserByEmail, createUser, validateUser, urlsForUser } = require('./helpers');
 
 //---------GET REQUESTS--------------
 
@@ -24,8 +24,13 @@ app.get("/urls.json", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const templateVars = { urlDatabase, user : users[req.cookies["user_id"]] };
-  res.render("urls_index", templateVars);
+  if (!req.cookies["user_id"]) {
+    res.redirect("/login");
+  } else {
+    const userUrls = urlsForUser(req.cookies["user_id"]);
+    const templateVars = { user: users[req.cookies["user_id"]], urls: userUrls };
+    res.render("urls_index", templateVars);
+  }
 });
 
 app.get("/urls/new", (req, res) => {
@@ -37,16 +42,23 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
+  const userId = req.cookies["user_id"];
   const shortURL = req.params.shortURL;
-  const templateVars = { shortURL, longURL: urlDatabase[shortURL], user : users[req.cookies["user_id"]] };
-  res.render("urls_show", templateVars);
+  if (!userId) {
+    res.redirect("/login");
+  } else if (userId !== urlDatabase[shortURL].userID) {
+    res.status(403).send("You do not own this URL.");
+  } else {
+    const templateVars = { shortURL, longURL : urlDatabase[shortURL].longURL, user: users[userId] };
+    res.render("urls_show", templateVars);
+  }
 });
 
 app.get("/u/:shortURL", (req, res) => {
   if (!urlDatabase[req.params.shortURL]) {
-    res.send("<h1>shortURL does not exist in urlDatabase</h1>");
+    res.send("<h1>shortURL does not exist in urlDatabase or http:// is not in URL</h1>");
   } else {
-    const longURL = urlDatabase[req.params.shortURL];
+    const longURL = urlDatabase[req.params.shortURL].longURL;
     res.redirect(longURL);
   }
 });
@@ -78,21 +90,30 @@ app.post("/urls", (req, res) => {
     return;
   }
   let shortURL = generateRandomString();
-  urlDatabase[shortURL] = req.body.longURL;
+  urlDatabase[shortURL] = { longURL : req.body.longURL, userID : req.cookies["user_id"] };
   res.redirect(`/urls/${shortURL}`);
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
-  const shortURL = req.params.shortURL;
-  console.log(`Deleted ${shortURL} from urlDatabase`);
-  delete urlDatabase[shortURL];
-  res.redirect("/urls");
+  let user = req.cookies["user_id"];
+  if (urlDatabase[req.params.shortURL].userID === user) {
+    delete urlDatabase[req.params.shortURL];
+    res.redirect("/urls");
+  } else {
+    res.status(403).send("Deleting is not permitted");
+  }
 });
 
 app.post("/urls/:shortURL", (req, res) => {
-  const shortURL = req.params.shortURL;
-  urlDatabase[shortURL] = req.body.newURL;
-  res.redirect(`/urls`);
+  let user = req.cookies["user_id"];
+
+  if (urlDatabase[req.params.shortURL].userID === user) {
+    let newURL = req.body.newURL;
+    urlDatabase[req.params.shortURL].longURL = newURL;
+    res.redirect('/urls');
+  } else {
+    res.status(403).send("Editing is not permitted");
+  }
 });
 
 app.post("/login", (req, res) => {
