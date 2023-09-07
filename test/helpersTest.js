@@ -15,17 +15,6 @@ const testUsers = {
   }
 };
 
-const urlDatabase = {
-  b6UTxQ: {
-    longURL: "https://www.tsn.ca",
-    userID: "userRandomID",
-  },
-  i3BoGr: {
-    longURL: "https://www.google.ca",
-    userID: "user2RandomID",
-  },
-};
-
 describe('getUserByEmail', function() {
   it('should return a user with valid email', function() {
     const user = findUserByEmail(testUsers, "user@example.com");
