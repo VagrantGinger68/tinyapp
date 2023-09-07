@@ -1,4 +1,5 @@
 const { urlDatabase, users } = require('./data');
+const bcrypt = require("bcryptjs");
 
 const generateRandomString = function() {
   const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -13,10 +14,11 @@ const generateRandomString = function() {
 };
 
 const createUser = (users, email, password) => {
+  const hashedPass = bcrypt.hashSync(password, 10);
   const newUser = {
     id: generateRandomString(),
     email,
-    password
+    password : hashedPass
   };
 
   users[newUser.id] = newUser;
@@ -43,7 +45,7 @@ const validateUser = function(users, email, password) {
     return { error : "<h1>User not found!</h1>", user : undefined };
   }
   
-  if (user.password !== password) {
+  if (bcrypt.compareSync(user.password, password)) {
     return { error : "<h1>Password doesn't match!</h1>", user : undefined };
   }
   
@@ -61,3 +63,5 @@ const urlsForUser = function(id) {
 };
 
 module.exports = { generateRandomString, findUserByEmail, createUser, validateUser, urlsForUser };
+
+// user.password === password
