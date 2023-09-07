@@ -1,5 +1,6 @@
 const { urlDatabase } = require('./data');
 
+//Generate a random 6 digit string
 const generateRandomString = function() {
   const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   let randomString = "";
@@ -12,6 +13,7 @@ const generateRandomString = function() {
   return randomString;
 };
 
+//Create new user
 const createUser = (users, email, password) => {
   const newUser = {
     id: generateRandomString(),
@@ -24,14 +26,16 @@ const createUser = (users, email, password) => {
   return newUser;
 };
 
-const findUserByEmail = function(users, email) {
-  const usersList = Object.values(users);
+//Function to find a specific user based on their email
+const findUserByEmail = function(database, email) {
+  const usersList = Object.values(database);
 
   const user = usersList.find((user) => email === user.email);
 
   return user;
 };
 
+//Function to pick out all the URLS for a specific user
 const urlsForUser = function(id) {
   const userUrls = {};
   for (const shortURL in urlDatabase) {
