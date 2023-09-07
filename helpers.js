@@ -50,4 +50,14 @@ const validateUser = function(users, email, password) {
   return { error : undefined, user };
 };
 
-module.exports = { generateRandomString, findUserByEmail, createUser, validateUser };
+const urlsForUser = function(id) {
+  const userUrls = {};
+  for (const shortURL in urlDatabase) {
+    if (urlDatabase[shortURL].userID === id) {
+      userUrls[shortURL] = urlDatabase[shortURL];
+    }
+  }
+  return userUrls;
+};
+
+module.exports = { generateRandomString, findUserByEmail, createUser, validateUser, urlsForUser };
