@@ -1,5 +1,4 @@
-const { urlDatabase, users } = require('./data');
-const bcrypt = require("bcryptjs");
+const { urlDatabase } = require('./data');
 
 const generateRandomString = function() {
   const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -14,11 +13,10 @@ const generateRandomString = function() {
 };
 
 const createUser = (users, email, password) => {
-  const hashedPass = bcrypt.hashSync(password, 10);
   const newUser = {
     id: generateRandomString(),
     email,
-    password : hashedPass
+    password
   };
 
   users[newUser.id] = newUser;
@@ -34,24 +32,6 @@ const findUserByEmail = function(users, email) {
   return user;
 };
 
-const validateUser = function(users, email, password) {
-  const user = findUserByEmail(users, email);
-
-  if (email === "" || password === "") {
-    return { error : "<h1>Email or Password is blank!</h1>", user : undefined };
-  }
-  
-  if (!user) {
-    return { error : "<h1>User not found!</h1>", user : undefined };
-  }
-  
-  if (bcrypt.compareSync(user.password, password)) {
-    return { error : "<h1>Password doesn't match!</h1>", user : undefined };
-  }
-  
-  return { error : undefined, user };
-};
-
 const urlsForUser = function(id) {
   const userUrls = {};
   for (const shortURL in urlDatabase) {
@@ -62,6 +42,6 @@ const urlsForUser = function(id) {
   return userUrls;
 };
 
-module.exports = { generateRandomString, findUserByEmail, createUser, validateUser, urlsForUser };
+module.exports = { generateRandomString, findUserByEmail, createUser, urlsForUser };
 
 // user.password === password
