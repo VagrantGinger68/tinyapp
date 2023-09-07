@@ -64,6 +64,8 @@ app.get("/urls/:shortURL", (req, res) => {
   //If user is not logged in, send to the login page
   if (!userId) {
     res.redirect("/login");
+  } else if (urlDatabase[shortURL] === undefined) {
+    res.status(400).send("<h1>shortURL doesn't exist in the database!</h1>");
   } else if (userId !== urlDatabase[shortURL].userID) {
     //If the userId is not the same as the one tied to the url, send an error
     res.status(403).send("<h1>You do not own this URL.</h1>");
